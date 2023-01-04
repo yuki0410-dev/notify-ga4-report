@@ -1,0 +1,40 @@
+{
+  "name": "notify-ga4-report",
+  "version": "1.0.0",
+  "description": "",
+  "author": "yuki0410-dev",
+  "license": "MIT",
+  "repository": {
+    "type": "git",
+    "url": "git+https://yuki0410-dev@github.com/yuki0410-dev/notify-ga4-report.git"
+  },
+  "scripts": {
+    "build": "tsc",
+    "type-check": "tsc --noEmit",
+    "lint": "npm run lint:prettier && npm run lint:eslint",
+    "lint:prettier": "prettier --check \"src/**/*.ts\"",
+    "lint:eslint": "eslint \"src/**/*.ts\"",
+    "lint-fix": "npm run lint-fix:prettier && npm run lint-fix:eslint",
+    "lint-fix:prettier": "npm run lint:prettier -- --write",
+    "lint-fix:eslint": "npm run lint:eslint -- --fix",
+    "ncu": "ncu"
+  },
+  "dependencies": {
+    "@google-analytics/data": "^3.1.2",
+    "date-fns": "^2.29.3"
+  },
+  "devDependencies": {
+    "@types/node": "18.11.18",
+    "@types/prettier": "2.7.2",
+    "@typescript-eslint/eslint-plugin": "^5.48.0",
+    "@typescript-eslint/experimental-utils": "^5.48.0",
+    "@typescript-eslint/parser": "^5.48.0",
+    "eslint": "^8.31.0",
+    "eslint-config-prettier": "^8.6.0",
+    "eslint-import-resolver-typescript": "^3.5.2",
+    "eslint-plugin-import": "^2.26.0",
+    "npm-check-updates": "^16.6.2",
+    "prettier": "^2.8.1",
+    "typescript": "^4.9.4"
+  }
+}
