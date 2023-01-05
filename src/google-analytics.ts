@@ -18,21 +18,17 @@ type PageViewsReportParams = {
 };
 
 type PageViewsReport = {
-  title: string;
   headers: string[];
-  body: string[][];
+  body: [number, number, string | null][];
 };
 
 export const runPageViewsReport = async ({ dateRange, dimension }: PageViewsReportParams): Promise<PageViewsReport> => {
   const now = new Date();
 
   const report: PageViewsReport = {
-    title: "",
-    headers: [],
+    headers: ["screenPageViews", "totalUsers", dimension],
     body: [],
   };
-
-  report.headers.push("screenPageViews", "totalUsers", dimension);
 
   const [response] = await analyticsDataClient.runReport({
     property: `properties/${GOOGLE_ANALYTICS_4_PROPERTY_ID}`,
@@ -76,7 +72,11 @@ export const runPageViewsReport = async ({ dateRange, dimension }: PageViewsRepo
     const dimensionValues = row.dimensionValues ?? [];
     const metricValue = row.metricValues ?? [];
 
-    report.body.push([metricValue[0]?.value ?? "0", metricValue[1]?.value ?? "0", dimensionValues[0]?.value ?? ""]);
+    report.body.push([
+      Number(metricValue[0]?.value ?? "0"),
+      Number(metricValue[1]?.value ?? "0"),
+      dimensionValues[0]?.value ?? null,
+    ]);
   }
 
   return report;
