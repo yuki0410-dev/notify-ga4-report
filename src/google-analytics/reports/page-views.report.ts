@@ -1,31 +1,34 @@
 import { subDays, format } from "date-fns";
 
 import { GOOGLE_ANALYTICS_4_PROPERTY_ID } from "../../env";
+import type { ReportDateRange } from "../client";
 import { analyticsDataClient, DATE_FORMAT } from "../client";
 
+type PageViewsReportDimension = "pageTitle" | "pageReferrer";
+
 type PageViewsReportParams = {
-  dateRange: "daily" | "weekly";
-  dimension: "pageTitle" | "pageReferrer";
+  dateRange: ReportDateRange;
+  dimension: PageViewsReportDimension;
 };
 
 type PageViewsReport = {
-  headers: string[];
+  headers: ["screenPageViews", "totalUsers", PageViewsReportDimension];
   body: [
     number, // screenPageViews
     number, // totalUsers
     string | null // {dimension}
   ][];
+  summary: [
+    number, // screenPageViews
+    number // totalUsers
+  ];
 };
 
 export const runPageViewsReport = async ({ dateRange, dimension }: PageViewsReportParams): Promise<PageViewsReport> => {
   const now = new Date();
 
-  const report: PageViewsReport = {
-    headers: ["screenPageViews", "totalUsers", dimension],
-    body: [],
-  };
-
-  const [response] = await analyticsDataClient.runReport({
+  // body
+  const [bodyResponse] = await analyticsDataClient.runReport({
     property: `properties/${GOOGLE_ANALYTICS_4_PROPERTY_ID}`,
     dateRanges: [
       {
@@ -63,16 +66,47 @@ export const runPageViewsReport = async ({ dateRange, dimension }: PageViewsRepo
     ],
   });
 
-  for (const row of response.rows ?? []) {
-    const dimensionValues = row.dimensionValues ?? [];
-    const metricValue = row.metricValues ?? [];
+  const body: PageViewsReport["body"] = [];
 
-    report.body.push([
-      Number(metricValue[0]?.value ?? "0"),
-      Number(metricValue[1]?.value ?? "0"),
+  for (const row of bodyResponse.rows ?? []) {
+    const dimensionValues = row.dimensionValues ?? [];
+    const metricValues = row.metricValues ?? [];
+
+    body.push([
+      Number(metricValues[0]?.value ?? "0"),
+      Number(metricValues[1]?.value ?? "0"),
       dimensionValues[0]?.value ?? null,
     ]);
   }
 
-  return report;
+  // sumally
+  const [sumallyResponse] = await analyticsDataClient.runReport({
+    property: `properties/${GOOGLE_ANALYTICS_4_PROPERTY_ID}`,
+    dateRanges: [
+      {
+        name: dateRange,
+        startDate: format(subDays(now, dateRange === "daily" ? 1 : 7), DATE_FORMAT),
+        endDate: format(subDays(now, 1), DATE_FORMAT),
+      },
+    ],
+    metrics: [
+      {
+        name: "screenPageViews",
+      },
+      {
+        name: "totalUsers",
+      },
+    ],
+  });
+
+  const summary: PageViewsReport["summary"] = [
+    Number(sumallyResponse.rows?.[0]?.metricValues?.[0]?.value ?? "0"),
+    Number(sumallyResponse.rows?.[0]?.metricValues?.[1]?.value ?? "0"),
+  ];
+
+  return {
+    headers: ["screenPageViews", "totalUsers", dimension],
+    body,
+    summary,
+  };
 };
