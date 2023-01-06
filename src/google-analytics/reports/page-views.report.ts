@@ -1,16 +1,7 @@
-import { BetaAnalyticsDataClient } from "@google-analytics/data";
 import { subDays, format } from "date-fns";
 
-import { GOOGLE_ANALYTICS_4_PROPERTY_ID, GOOGLE_APPLICATION_CLIENT_EMAIL, GOOGLE_APPLICATION_PRIVATE_KEY } from "./env";
-
-const DATE_FORMAT = "yyyy-MM-dd";
-
-const analyticsDataClient = new BetaAnalyticsDataClient({
-  credentials: {
-    client_email: GOOGLE_APPLICATION_CLIENT_EMAIL,
-    private_key: GOOGLE_APPLICATION_PRIVATE_KEY,
-  },
-});
+import { GOOGLE_ANALYTICS_4_PROPERTY_ID } from "../../env";
+import { analyticsDataClient, DATE_FORMAT } from "../client";
 
 type PageViewsReportParams = {
   dateRange: "daily" | "weekly";
@@ -19,7 +10,11 @@ type PageViewsReportParams = {
 
 type PageViewsReport = {
   headers: string[];
-  body: [number, number, string | null][];
+  body: [
+    number, // screenPageViews
+    number, // totalUsers
+    string | null // {dimension}
+  ][];
 };
 
 export const runPageViewsReport = async ({ dateRange, dimension }: PageViewsReportParams): Promise<PageViewsReport> => {
