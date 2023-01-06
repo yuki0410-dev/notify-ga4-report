@@ -5,6 +5,9 @@ on:
       - main
   schedule:
     - cron: "0 17 * * *"
+  repository_dispatch:
+    types:
+      - run-report
   workflow_dispatch:
 
 jobs:
