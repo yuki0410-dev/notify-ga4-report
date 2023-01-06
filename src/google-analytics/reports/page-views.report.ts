@@ -99,8 +99,6 @@ export const runPageViewsReport = async ({ dateRange, dimension }: PageViewsRepo
     ],
   });
 
-  console.log(JSON.stringify(sumallyResponse.rows));
-
   const summary: PageViewsReport["summary"] = [
     Number(sumallyResponse.rows?.[0]?.metricValues?.[0]?.value ?? "0"),
     Number(sumallyResponse.rows?.[0]?.metricValues?.[1]?.value ?? "0"),
