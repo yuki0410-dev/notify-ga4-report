@@ -1,4 +1,4 @@
-import got from "got";
+import fetch from "node-fetch";
 
 import { SLACK_WEBHOOK_URL } from "../env";
 
@@ -8,13 +8,14 @@ type SlackNotifyParams = {
 };
 
 export const notifySlack = async ({ title, reports }: SlackNotifyParams): Promise<void> => {
-  await got.post(SLACK_WEBHOOK_URL, {
-    json: {
+  await fetch(SLACK_WEBHOOK_URL, {
+    method: "POST",
+    body: JSON.stringify({
       text: `■ ${title}\n${reports
         .map((report) => {
           return `\`\`\`${report}\`\`\``;
         })
         .join(`\n`)}`,
-    },
+    }),
   });
 };
