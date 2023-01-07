@@ -1,7 +1,7 @@
 import { subDays, format } from "date-fns";
 
+import type { ReportDateRange } from "../";
 import { GOOGLE_ANALYTICS_4_PROPERTY_ID } from "../../env";
-import type { ReportDateRange } from "../client";
 import { analyticsDataClient, DATE_FORMAT } from "../client";
 
 type PageViewsReportDimension = "pageTitle" | "pageReferrer";
@@ -9,14 +9,15 @@ type PageViewsReportDimension = "pageTitle" | "pageReferrer";
 type PageViewsReportParams = {
   dateRange: ReportDateRange;
   dimension: PageViewsReportDimension;
+  limit?: number;
 };
 
-type PageViewsReport = {
-  headers: ["screenPageViews", "totalUsers", PageViewsReportDimension];
-  body: [
+export type PageViewsReport = {
+  headers: ["PV", "Users", PageViewsReportDimension];
+  records: [
     number, // screenPageViews
     number, // totalUsers
-    string | null // {dimension}
+    string // {dimension}
   ][];
   summary: [
     number, // screenPageViews
@@ -24,7 +25,11 @@ type PageViewsReport = {
   ];
 };
 
-export const runPageViewsReport = async ({ dateRange, dimension }: PageViewsReportParams): Promise<PageViewsReport> => {
+export const runPageViewsReport = async ({
+  dateRange,
+  dimension,
+  limit = 10,
+}: PageViewsReportParams): Promise<PageViewsReport> => {
   const now = new Date();
 
   // body
@@ -66,17 +71,27 @@ export const runPageViewsReport = async ({ dateRange, dimension }: PageViewsRepo
     ],
   });
 
-  const body: PageViewsReport["body"] = [];
+  console.debug(`bodyResponse: ${JSON.stringify(bodyResponse.rows)}`);
 
-  for (const row of bodyResponse.rows ?? []) {
+  const records: PageViewsReport["records"] = [];
+
+  const rows = bodyResponse.rows ?? [];
+  for (const row of rows) {
     const dimensionValues = row.dimensionValues ?? [];
     const metricValues = row.metricValues ?? [];
 
-    body.push([
-      Number(metricValues[0]?.value ?? "0"),
-      Number(metricValues[1]?.value ?? "0"),
-      dimensionValues[0]?.value ?? null,
-    ]);
+    const screenPageViews = Number(metricValues[0]?.value ?? "0");
+    const totalUsers = Number(metricValues[1]?.value ?? "0");
+
+    if (records.length < limit) {
+      records.push([screenPageViews, totalUsers, dimensionValues[0]?.value || "-"]);
+    } else {
+      if (!records[limit]) {
+        records[limit] = [0, 0, "その他"];
+      }
+      records[limit][0] = records[limit][0] + screenPageViews;
+      records[limit][1] = records[limit][1] + totalUsers;
+    }
   }
 
   // sumally
@@ -99,14 +114,20 @@ export const runPageViewsReport = async ({ dateRange, dimension }: PageViewsRepo
     ],
   });
 
+  console.debug(`sumallyResponse: ${JSON.stringify(sumallyResponse.rows)}`);
+
   const summary: PageViewsReport["summary"] = [
     Number(sumallyResponse.rows?.[0]?.metricValues?.[0]?.value ?? "0"),
     Number(sumallyResponse.rows?.[0]?.metricValues?.[1]?.value ?? "0"),
   ];
 
-  return {
-    headers: ["screenPageViews", "totalUsers", dimension],
-    body,
+  const report: PageViewsReport = {
+    headers: ["PV", "Users", dimension],
+    records,
     summary,
   };
+
+  console.debug(`report: ${JSON.stringify(report)}`);
+
+  return report;
 };

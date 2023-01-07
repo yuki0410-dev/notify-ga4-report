@@ -4,8 +4,6 @@ import { GOOGLE_APPLICATION_CLIENT_EMAIL, GOOGLE_APPLICATION_PRIVATE_KEY } from 
 
 export const DATE_FORMAT = "yyyy-MM-dd";
 
-export type ReportDateRange = "daily" | "weekly";
-
 export const analyticsDataClient = new BetaAnalyticsDataClient({
   credentials: {
     client_email: GOOGLE_APPLICATION_CLIENT_EMAIL,

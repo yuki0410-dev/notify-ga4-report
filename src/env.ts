@@ -15,3 +15,9 @@ if (!process.env.GOOGLE_APPLICATION_PRIVATE_KEY) {
 }
 
 export const GOOGLE_APPLICATION_PRIVATE_KEY = process.env.GOOGLE_APPLICATION_PRIVATE_KEY;
+
+if (!process.env.SLACK_WEBHOOK_URL) {
+  throw new Error("env.SLACK_WEBHOOK_URL is not set");
+}
+
+export const SLACK_WEBHOOK_URL = process.env.SLACK_WEBHOOK_URL;
