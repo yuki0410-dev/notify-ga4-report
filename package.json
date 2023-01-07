@@ -22,10 +22,11 @@
   "dependencies": {
     "@google-analytics/data": "^3.1.2",
     "date-fns": "^2.29.3",
-    "node-fetch": "^3.3.0"
+    "node-fetch": "^2.6.7"
   },
   "devDependencies": {
     "@types/node": "18.11.18",
+    "@types/node-fetch": "^2.6.2",
     "@types/prettier": "2.7.2",
     "@typescript-eslint/eslint-plugin": "^5.48.0",
     "@typescript-eslint/experimental-utils": "^5.48.0",
