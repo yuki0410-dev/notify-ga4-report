@@ -1,2 +1,2 @@
 export * from "./reports";
-export * from "./index.d";
+export * from "./client";
